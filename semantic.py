@@ -35,7 +35,7 @@ date = data.getDateStr()
 
 # define logfile
 # prepare pandas data frame for recorded data
-columns = ['time_stamp', 'id', 'age', 'gender', 'word', 'keypress', 'reaction_time']
+columns = ['time_stamp', 'id', 'age', 'gender', 'word', 'keypress', 'reaction_time', 'phase']
 logfile = pd.DataFrame(columns=columns)
 
 # make sure that there is a logfile directory and otherwise make one
@@ -54,21 +54,41 @@ You do this by pressing Y for YES if you have seen it. If the word has not appea
 If you understand these rules, please press any key to begin the experiment.
 '''
 
+intermezzo = '''
+The first part of the experiment is complete. \n\n
+You will be now be shown words and it is your task to identify whether the word has been shown previously in this experiment or not.\n\n
+Press Y for YES if the word has been shown. Press N for NO if the word has not previously been shown.\n\n\n
+If you understand these rules, please press space to begin the experiment.
+'''
+
 goodbye = '''
 The experiment is done. Thank you for your participation!
 '''
 
 # List of 100 words
-school_related_words = ["classroom", "teacher", "student", "homework", "exam", "textbook", "pencil", "notebook", "chalkboard", "backpack", 
-                        "library", "principal", "lunchbox", "recess", "graduation", "science", "mathematics", "history", "literature", "geography", 
-                        "chemistry", "physics", "biology", "art", "music", "physicaleducation", "bell", "desk", "attendance", "diploma", 
-                        "project", "quiz", "education", "schoolbus", "cafeteria", "playground", "blackboard", "algebra", "geometry", 
-                        "language", "spelling", "backpack", "notebook", "schoolwork", "reportcard", "pta", "fieldtrip", "uniform", "clock", "learning"]
+school_related_words = ["classroom", "teacher", "student", "exam", "textbook", "pencil", "notebook", "chalkboard", "backpack", 
+                        "library", "principal", "lunchbox", "recess", "graduation", "science", "history", "literature", "geography", 
+                        "chemistry", "physics", "biology", "art", "music", "bell", "desk", "attendance", "diploma", 
+                        "project", "quiz", "education", "schoolbus", "cafeteria", "playground", "algebra", "geometry", 
+                        "language", "spelling", "notebook", "fieldtrip", "clock"]
 
 unrelated_words = ["cat", "river", "pizza", "story", "lamp", "park", "car", "flower", "hat", "ball", "guitar", "sun", "key", "chair", "dog", "moon", 
-                   "rain", "shoe", "house", "apple", "song", "bike", "bird", "clock", "cloud", "star", "cup", "smile", "game", "duck", "candy", 
-                   "beach", "icecream", "color", "letter", "dance", "baby", "train", "sleep", "run", "bear", "laugh", "ocean", "bridge", "book", 
-                   "tree", "chair", "sky", "fire", "mountain"]
+                   "rain", "shoe", "house", "apple", "song", "bike", "bird", "clock", "star", "cup", "smile", "game", "duck", "candy", 
+                   "beach", "icecream", "color", "letter", "dance", "baby", "train", "sleep", "glass", "plant"]
+
+new_school = ["lesson", "study", "classmate", "backpack", "class", "knowledge", "chalk", "homework", "mathematics", "learning"]
+
+# Modifying the new_random list
+new_random = ["run", "bear", "laugh", "ocean", "bridge", "tree", "cloud", "sky", "fire", "mountain"]
+
+sample_words_school = random.sample(school_related_words, 15)
+sample_words_random = random.sample(unrelated_words, 15)
+
+# Combine new words with recycled words
+new_words = new_random + new_school + sample_words_school + sample_words_random
+
+# Shuffle the combined list
+random.shuffle(new_words)
 
 # Combine the two lists
 all_words = school_related_words + unrelated_words
@@ -105,8 +125,11 @@ text_stimulus = visual.TextStim(win, text='', height=30)
 
 
 ################ beginning of experiment ###############
+
+##introduction
 introduction(instruction)
 
+##phase 1
 # preparing image stimulus
 for word in all_words:
     msg(word)
@@ -117,9 +140,11 @@ for word in all_words:
     # get reaction time
     reaction_time = stopwatch.getTime()
     
-    response = get_response()
     # wait for a keypress and record the response
+    response = get_response()
+ 
     
+    phase = 1
     
     logfile = logfile.append({
         'time_stamp': date,
@@ -128,7 +153,39 @@ for word in all_words:
         'gender': GENDER,
         'keypress': response,
         'word': word,
-        'reaction_time': reaction_time}, ignore_index = True)
+        'reaction_time': reaction_time,
+        'phase': phase}, ignore_index = True)
+    
+core.wait(5)
+
+#intermezzo
+introduction(intermezzo)
+
+##phase 2##
+# preparing image stimulus
+for boop in new_words:
+    msg(boop)
+    
+    # start recording reaction time
+    stopwatch.reset()
+    
+    # get reaction time
+    reaction_time = stopwatch.getTime()
+    
+    response = get_response()
+    # wait for a keypress and record the response
+    
+    phase = 2
+    
+    logfile = logfile.append({
+        'time_stamp': date,
+        'id': ID,
+        'age': AGE,
+        'gender': GENDER,
+        'keypress': response,
+        'word': boop,
+        'reaction_time': reaction_time,
+        'phase': phase}, ignore_index = True)
     
 #print(get_response(stimulus))
 
